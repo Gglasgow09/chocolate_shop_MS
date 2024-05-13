@@ -30,9 +30,14 @@ customers_data = [
 
 
 orders_data = [
-    {'customer_id': 1, 'quantity': 5, 'chocolates': [1, 2]},  
-    {'customer_id': 2, 'quantity': 3, 'chocolates': [2]},    
-   
+    {'customer_id': 1, 'quantity': 5, 'chocolates': [1, 2]},
+    {'customer_id': 2, 'quantity': 3, 'chocolates': [2]},
+    {'customer_id': 3, 'quantity': 2, 'chocolates': [3, 4]},
+    {'customer_id': 4, 'quantity': 1, 'chocolates': [1]},
+    {'customer_id': 1, 'quantity': 4, 'chocolates': [5, 6]},
+    {'customer_id': 2, 'quantity': 3, 'chocolates': [7]},
+    {'customer_id': 3, 'quantity': 2, 'chocolates': [2, 3]},
+    {'customer_id': 4, 'quantity': 1, 'chocolates': [4, 5]},
 ]
 
 # Insert chocolates

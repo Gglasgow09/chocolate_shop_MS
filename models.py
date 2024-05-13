@@ -39,7 +39,7 @@ class Order(Base):
     customer = relationship("Customer", back_populates="orders")
     chocolates = relationship("Chocolate", secondary=association_table, back_populates="orders")
 
-# Create engine and session
+
 engine = create_engine('sqlite:///chocolate_shop.db')
 Base.metadata.create_all(engine)
 

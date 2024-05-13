@@ -22,10 +22,19 @@ def delete_chocolate(chocolate_id):
         session.commit()
 
 # customer
-def add_customer(name,email):
-    customer = Customer(name=name, email=email)
+def add_customer(first_name, last_name, email):
+    customer = Customer(frst_name=first_name, last_name=last_name, email=email)
     session.add(customer)
     session.commit()
+
+def add_new_customer(first_name, last_name, email):
+    existing_customer = session.query(Customer).filter_by(email=email).first()
+    if existing_customer is None:
+        new_customer = Customer(first_name=first_name, last_name=last_name, email=email)
+        session.add(new_customer)
+        session.commit()
+    else:
+        print(f"A customer with the email {email} already exists.")
 
 def update_customer_name(name_id, new_name):
     customer = session.query(Customer).filter_by(id=name_id).first()
@@ -64,10 +73,16 @@ def delete_order(order_id):
         session.commit()
 
 
-
 engine = create_engine('sqlite:///chocolate_shop.db')
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 session = Session()
 
+add_new_customer('Sally', 'Johnson', 'sallyj@example.com')
+
+# some simple queries for SQL
+# 1. Get all customers
+customers = session.query(Customer).all()
+for customer in customers:
+    print(customer.first_name, customer.last_name, customer.email)
