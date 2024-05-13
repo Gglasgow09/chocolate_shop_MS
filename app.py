@@ -81,8 +81,23 @@ session = Session()
 
 add_new_customer('Sally', 'Johnson', 'sallyj@example.com')
 
-# some simple queries for SQL
+# beginner 
+# simple queries for SQL
 # 1. Get all customers
 customers = session.query(Customer).all()
 for customer in customers:
     print(customer.first_name, customer.last_name, customer.email)
+
+#where clause
+customer = session.query(Customer).filter_by(first_name='John').first()
+print(customer.first_name, customer.last_name, customer.email)
+
+#order by
+customers = session.query(Customer).order_by(Customer.first_name).all()
+for customer in customers:
+    print(customer.first_name, customer.last_name, customer.email)
+
+# order by chocolates
+chocolates = session.query(Chocolate).order_by(Chocolate.price).all()
+for chocolate in chocolates:
+    print(chocolate.name, chocolate.price, chocolate.inventory)
