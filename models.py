@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Table
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Table, Index, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -14,8 +14,13 @@ class Chocolate(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    price = Column(Integer, nullable=False)
+    price = Column(Float, nullable=False)
     inventory = Column(Integer, nullable=False)
+
+    __table_args__ = (
+        # makes sure no two chocolates can have the same name
+        Index('idx_name', 'name'),
+    )
 
     orders = relationship("Order", secondary=association_table, back_populates="chocolates")
 
@@ -26,6 +31,11 @@ class Customer(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)
+
+    __table_args__ = (
+        # makes sure no two customers can have the same email
+        UniqueConstraint('email', name='uix_email'),
+    )
 
     orders = relationship("Order", back_populates="customer")
 
