@@ -53,14 +53,18 @@ class Customer(Base):
 
     orders = relationship("Order", back_populates="customer")
     
-    @validates('phone_number', 'address', 'email')
+    @validates('first_name', 'last_name', 'email', 'phone_number','address')
     def validate_fields(self, key, value):
-        if key == 'phone_number':
+        if key == 'first_name':
+            assert value != '', "First name cannot be empty"
+        elif key == 'last_name':
+            assert value != '', "Last name cannot be empty"
+        elif key == 'email':
+            assert re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', value), "Invalid email format"
+        elif key == 'phone_number':
             assert re.match(r'^\+?1?\d{9,15}$', value), "Invalid phone number"
         elif key == 'address':
             assert value != '', "Address cannot be empty"
-        elif key == 'email':
-            assert re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', value), "Invalid email format"
         return value
 class Order(Base):
     __tablename__ = 'orders'
