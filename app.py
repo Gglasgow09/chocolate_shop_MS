@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func, desc
 from sqlalchemy.orm import sessionmaker
-from models import Base, Chocolate, Customer, Order
+from models import Base, Chocolate, Customer, Order, association_table
 import re
 
 
@@ -123,25 +123,68 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-add_new_customer('Sally', 'Johnson', 'sallyj@example.com')
-update_customer_name(5, 'Sandra', 'Johnson')
+# add_new_customer('Sally', 'Johnson', 'sallyj@example.com')
+# update_customer_name(5, 'Sandra', 'Johnson')
 
-# beginner simple queries for SQL
-# 1. Get all customers
-customers = session.query(Customer).all()
-for customer in customers:
-    print(customer.first_name, customer.last_name, customer.email)
+# # beginner simple queries for SQL
+# # 1. Get all customers
+# customers = session.query(Customer).all()
+# for customer in customers:
+#     print(customer.first_name, customer.last_name, customer.email)
 
-# 2. where clause
-customer = session.query(Customer).filter_by(first_name='John').first()
-print(customer.first_name, customer.last_name, customer.email)
+# # 2. where clause
+# customer = session.query(Customer).filter_by(first_name='John').first()
+# print(customer.first_name, customer.last_name, customer.email)
 
-# 3. order by
-customers = session.query(Customer).order_by(Customer.first_name).all()
-for customer in customers:
-    print(customer.first_name, customer.last_name, customer.email)
+# # 3. order by
+# customers = session.query(Customer).order_by(Customer.first_name).all()
+# for customer in customers:
+#     print(customer.first_name, customer.last_name, customer.email)
 
-# 4. order by chocolates
-chocolates = session.query(Chocolate).order_by(Chocolate.price).all()
-for chocolate in chocolates:
-    print(chocolate.name, chocolate.price, chocolate.inventory)
+# # 4. order by chocolates
+# chocolates = session.query(Chocolate).order_by(Chocolate.price).all()
+# for chocolate in chocolates:
+#     print(chocolate.name, chocolate.price, chocolate.inventory)
+
+# intermediate queries
+
+# top selling chocolate
+top_selling_chocolate = session.query(
+    Chocolate.name, 
+    func.sum(Order.quantity).label('total')
+).join(
+    Order.chocolates
+).group_by(
+    Chocolate.name
+).order_by(
+    desc('total')
+).first()
+
+print(f"The top selling chocolate is {top_selling_chocolate.name}.")
+
+# customer with the most orders
+customer_most_orders = session.query(
+    Customer.first_name, 
+    Customer.last_name, 
+    func.count(Order.id).label('total')
+).join(
+    Order.customer
+).group_by(
+    Customer.id
+).order_by(
+    desc('total')
+).first()
+
+print(f"The customer with the most orders is {customer_most_orders.first_name} {customer_most_orders.last_name}.")
+
+# total revenue
+total_revenue = session.query(
+    func.sum(Chocolate.price * Order.quantity)
+).join(
+    Order.chocolates
+).first()
+
+print(f"The total revenue is ${total_revenue[0]}.")
+
+
+
