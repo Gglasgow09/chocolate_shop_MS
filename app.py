@@ -1,8 +1,7 @@
 from sqlalchemy import create_engine, func, desc
 from sqlalchemy.orm import sessionmaker
-from models import Base, Chocolate, Customer, Order, association_table
-import re
-
+from sqlalchemy.exc import SQLAlchemyError
+from models import Base, Chocolate, Customer, Order
 
 # chocolate
 def add_chocolate(name, price, inventory):
@@ -13,6 +12,7 @@ def add_chocolate(name, price, inventory):
     if not isinstance(price, (int, float)) or price <= 0:
         print("Price must be a positive number.")
         return
+
 
     if not isinstance(inventory, int) or inventory < 0:
         print("Inventory must be a non-negative integer.")
@@ -52,17 +52,9 @@ def delete_chocolate(chocolate_id):
 
 
 # customer
-def is_valid_email(email):
-    email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    return re.match(email_regex, email) is not None
-
 def add_new_customer(first_name, last_name, email):
     if not first_name or not last_name or not email:
         print("First name, last name, and email are required.")
-        return
-
-    if not is_valid_email(email):
-        print("Invalid email format.")
         return
 
     existing_customer = session.query(Customer).filter_by(email=email).first()
@@ -99,10 +91,28 @@ def update_customer_email(customer_id, new_email):
         session.commit()
 
 # order
-def add_order(quantity):
-    order = Order(quantity=quantity)
-    session.add(order)
-    session.commit()
+#advanced feature implementation of transactions
+def add_order(quantity, customer_id, chocolate_ids):
+    try:
+        # Start a transaction
+        order = Order(quantity=quantity, customer_id=customer_id)
+        for chocolate_id in chocolate_ids:
+            chocolate = session.query(Chocolate).get(chocolate_id)
+            if chocolate.inventory < quantity:
+                raise Exception(f"Not enough inventory for chocolate id {chocolate_id}")
+            chocolate.inventory -= quantity
+            order.chocolates.append(chocolate)
+        session.add(order)
+        # Commits the transaction
+        session.commit()
+    except SQLAlchemyError as e:
+        # Rollback the transaction in case of error
+        session.rollback()
+        print(f"Failed to add order: {e}")
+    except Exception as e:
+        # Rollback the transaction in case of error
+        session.rollback()
+        print(f"Failed to add order: {e}")
 
 def update_order(order_id, new_order):
     order = session.query(Order).filter_by(id=order_id).first()
@@ -126,25 +136,25 @@ session = Session()
 # add_new_customer('Sally', 'Johnson', 'sallyj@example.com')
 # update_customer_name(5, 'Sandra', 'Johnson')
 
-# # beginner simple queries for SQL
-# # 1. Get all customers
-# customers = session.query(Customer).all()
-# for customer in customers:
-#     print(customer.first_name, customer.last_name, customer.email)
+# beginner simple queries for SQL
+# 1. Get all customers
+customers = session.query(Customer).all()
+for customer in customers:
+    print(customer.first_name, customer.last_name, customer.email)
 
-# # 2. where clause
-# customer = session.query(Customer).filter_by(first_name='John').first()
-# print(customer.first_name, customer.last_name, customer.email)
+# 2. where clause
+customer = session.query(Customer).filter_by(first_name='John').first()
+print(customer.first_name, customer.last_name, customer.email)
 
-# # 3. order by
-# customers = session.query(Customer).order_by(Customer.first_name).all()
-# for customer in customers:
-#     print(customer.first_name, customer.last_name, customer.email)
+# 3. order by
+customers = session.query(Customer).order_by(Customer.first_name).all()
+for customer in customers:
+    print(customer.first_name, customer.last_name, customer.email)
 
-# # 4. order by chocolates
-# chocolates = session.query(Chocolate).order_by(Chocolate.price).all()
-# for chocolate in chocolates:
-#     print(chocolate.name, chocolate.price, chocolate.inventory)
+# 4. order by chocolates
+chocolates = session.query(Chocolate).order_by(Chocolate.price).all()
+for chocolate in chocolates:
+    print(chocolate.name, chocolate.price, chocolate.inventory)
 
 # intermediate queries
 
@@ -185,6 +195,9 @@ total_revenue = session.query(
 ).first()
 
 print(f"The total revenue is ${total_revenue[0]}.")
+
+
+
 
 
 

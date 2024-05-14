@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Chocolate, Customer, Order, Base
+from faker import Faker
 
 engine = create_engine('sqlite:///chocolate_shop.db')
 Base.metadata.bind = engine
