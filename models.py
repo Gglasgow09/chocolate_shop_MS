@@ -6,11 +6,12 @@ from sqlalchemy.orm import relationship, sessionmaker, validates
 
 Base = declarative_base()
 
+# many to many relationship between orders and chocolates
 association_table = Table('order_chocolates', Base.metadata,
                           Column('order_id', Integer, ForeignKey('orders.id')),
                           Column('chocolate_id', Integer, ForeignKey('chocolates.id'))
                           )
-
+# many to many relationship between users and roles
 user_roles = Table('user_roles', Base.metadata,
                    Column('user_id', Integer, ForeignKey('users.id')),
                    Column('role_id', Integer, ForeignKey('roles.id'))
@@ -94,7 +95,7 @@ class Customer(Base):
         return value
 class Order(Base):
     __tablename__ = 'orders'
-
+ 
     id = Column(Integer, primary_key=True)
     customer_id = Column(Integer, ForeignKey('customers.id'))
     quantity = Column(Integer, nullable=False)

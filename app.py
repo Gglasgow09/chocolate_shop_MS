@@ -286,21 +286,22 @@ session = Session()
 # print(f"The total revenue is ${total_revenue[0]}.")
 
 # advanced queries
-top_customers = session.query(
-    Order.customer_id,
-    Customer.first_name,
-    Customer.last_name,
-    func.count(Order.id).label('order_count')
-).join(
-    Order
-).group_by(
-    Customer.id
-).order_by(
-    func.count(Order.id).desc()
-).limit(3).all()
+# 1. Get the top 3 customers with the most orders
+# top_customers = session.query(
+#     Order.customer_id,
+#     Customer.first_name,
+#     Customer.last_name,
+#     func.count(Order.id).label('order_count')
+# ).join(
+#     Order
+# ).group_by(
+#     Customer.id
+# ).order_by(
+#     func.count(Order.id).desc()
+# ).limit(3).all()
 
-for customer in top_customers:
-    print(f"{customer.first_name} {customer.last_name} has {customer.order_count} orders.")
+# for customer in top_customers:
+#     print(f"{customer.first_name} {customer.last_name} has {customer.order_count} orders.")
 
 
 
