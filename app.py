@@ -1,7 +1,72 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func, desc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
-from models import Base, Chocolate, Customer, Order
+from models import Base, Chocolate, Customer, Order, User, Role
+from flask import Flask, request, jsonify, g
+from functools import wraps
+
+# app = Flask(__name__)
+
+# engine = create_engine('sqlite:///chocolate_shop.db')
+# Base.metadata.create_all(engine)
+# Session = sessionmaker(bind=engine)
+# session = Session()
+
+# def role_required(role_name):
+#     def decorator(f):
+#         @wraps(f)
+#         def decorated_function(*args, **kwargs):
+#             if not g.user.has_role(role_name):
+#                 return jsonify({"error": "Unauthorized"}), 403
+#             return f(*args, **kwargs)
+#         return decorated_function
+#     return decorator
+
+# def login_required(f):
+#     @wraps(f)
+#     def decorated_function(*args, **kwargs):
+#         if not g.user:
+#             return jsonify({"error": "Unauthorized"}), 403
+#         return f(*args, **kwargs)
+#     return decorated_function
+
+# def get_current_user():
+#     user_id = request.headers.get('user_id')
+#     if user_id:
+#         user = session.query(User).get(user_id)
+#         return user
+#     return None
+
+# def add_role_to_user(user_id, role_name):
+#     user = session.query(User).get(user_id)
+#     role = session.query(Role).filter_by(name=role_name).first()
+#     if user and role:
+#         user.roles.append(role)
+#         session.commit()
+#     else:
+#         print("User or role not found.")
+
+# def setup_roles():
+#     admin_role = Role(name='admin')
+#     user_role = Role(name='user')
+#     session.add(admin_role)
+#     session.add(user_role)
+#     session.commit()
+
+#     admin_user = User(username='admin', password='admin')
+#     reg_user = User(username='user', password='user')
+
+#     admin_user.roles.append(admin_role)
+#     admin_user.roles.append(user_role)
+#     reg_user.roles.append(user_role)
+
+#     session.add(admin_user)
+#     session.add(reg_user)
+#     session.commit()
+
+# with app.app_context():
+#     setup_roles()
+    
 
 # chocolate
 def add_chocolate(name, price, inventory):
@@ -70,14 +135,18 @@ def add_customer(first_name, last_name, email):
     session.add(customer)
     session.commit()
 
-def update_customer_name(customer_id, new_first_name, new_last_name):
+def update_customer_first_name(customer_id, new_first_name):
     customer = session.query(Customer).filter_by(id=customer_id).first()
     if customer:
         customer.first_name = new_first_name
+        session.commit()
+
+def update_customer_last_name(customer_id, new_last_name):
+    customer = session.query(Customer).filter_by(id=customer_id).first()
+    if customer:
         customer.last_name = new_last_name
         session.commit()
   
-
 def update_customer_email(customer_id, new_email):
     customer = session.query(Customer).filter_by(id=customer_id).first()
     if customer:
@@ -148,9 +217,11 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# add_new_customer('Sally', 'Johnson', 'sallyj@example.com', '+17185237062', '111 Main Street Brookly NY, 11212' )
-# update_customer_name(15, 'Sandra', 'Johnson')
-update_customer_email(15, 'sandraj@gmail.com')
+# add_new_customer('Sally', 'Johnson', 'sallyj@example.com', '+17185237072', '110 Main Street Brookly NY, 11212' )
+# update_customer_first_name(15, 'Sandra')
+# update_customer_last_name(15, 'John')
+# update_customer_email(15, 'sandrajohn@gmail.com')
+
 
 # beginner simple queries for SQL
 # 1. Get all customers
@@ -159,6 +230,7 @@ update_customer_email(15, 'sandraj@gmail.com')
 #     print(customer.first_name, customer.last_name, customer.email)
 
 # # 2. where clause
+# used the filter() method to create a query with a WHERE clause. The filter() method takes a column and a value to filter the results.
 # customer = session.query(Customer).filter_by(first_name='John').first()
 # print(customer.first_name, customer.last_name, customer.email)
 
@@ -185,8 +257,9 @@ update_customer_email(15, 'sandraj@gmail.com')
 # ).order_by(
 #     desc('total')
 # ).first()
-
 # print(f"The top selling chocolate is {top_selling_chocolate.name}.")
+
+
 
 # # customer with the most orders
 # customer_most_orders = session.query(
@@ -211,6 +284,23 @@ update_customer_email(15, 'sandraj@gmail.com')
 # ).first()
 
 # print(f"The total revenue is ${total_revenue[0]}.")
+
+# advanced queries
+top_customers = session.query(
+    Order.customer_id,
+    Customer.first_name,
+    Customer.last_name,
+    func.count(Order.id).label('order_count')
+).join(
+    Order
+).group_by(
+    Customer.id
+).order_by(
+    func.count(Order.id).desc()
+).limit(3).all()
+
+for customer in top_customers:
+    print(f"{customer.first_name} {customer.last_name} has {customer.order_count} orders.")
 
 
 

@@ -11,6 +11,32 @@ association_table = Table('order_chocolates', Base.metadata,
                           Column('chocolate_id', Integer, ForeignKey('chocolates.id'))
                           )
 
+user_roles = Table('user_roles', Base.metadata,
+                   Column('user_id', Integer, ForeignKey('users.id')),
+                   Column('role_id', Integer, ForeignKey('roles.id'))
+                   )
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)
+    roles = relationship("Role", secondary=user_roles, back_populates="users")
+
+    def has_role(self, role_name):
+        for role in self.roles:
+            if role.name == role_name:
+                return True
+        return False
+    
+class Role(Base):
+    __tablename__ = 'roles'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+    users = relationship("User", secondary=user_roles, back_populates="roles")
+
 class Chocolate(Base):
     __tablename__ = 'chocolates'
 
