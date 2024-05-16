@@ -3,11 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Chocolate, Customer, Order, Base
 
-# Create a new engine and sessionmaker
 engine = create_engine('sqlite:///:memory:')
 Session = sessionmaker(bind=engine)
 
-# Now you can use Session in your tests
 def test_db():
     Base.metadata.create_all(engine)
     session = Session()
