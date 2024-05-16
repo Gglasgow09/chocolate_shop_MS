@@ -32,7 +32,7 @@ This is a Python application that uses SQLAlchemy to manage a chocolate shop. It
 ### Advanced
 - Handles transactions for maintaining data consistency and integrity
 - Implements complex queries involving subqueries, common table expressions, and window functions
-- Performance tuning using query optimization techniques like query plans and indexes
+- Performance tuning using query optimization techniques such as query plans and indexes
 - Implements security measures like roles and permissions to restrict access to sensitive data
 
 ## Models
