@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models import Chocolate, Customer, Order, Base
+from models import Chocolate, Customer, Order, User, Base
 from faker import Faker
 # from random import randint, sample
 
@@ -10,6 +10,10 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+
+user_data = [
+    {'first_name': 'Gabby', 'last_name': 'Glasgow', 'username': 'Gglasgow', 'password': 'password'}
+]
 
 chocolates_data = [
     {'name': 'Dark Chocolate', 'price': 3.99, 'inventory': 150},
@@ -58,6 +62,12 @@ for data in chocolates_data:
     session.add(chocolate)
 session.commit()  
 
+#Insert users
+for data in user_data:
+    user = User(**data)
+    session.add(user)
+session.commit()
+
 # Insert customers
 for data in customers_data:
     customer = Customer(**data)
@@ -68,7 +78,9 @@ session.commit()
 for data in orders_data:
     order = Order(customer_id=data['customer_id'], quantity=data['quantity'])
     session.add(order) 
-    session.commit()  
+    session.commit() 
+
+#Insert chocolates into orders 
     for chocolate_id in data['chocolates']:
         chocolate = session.get(Chocolate, chocolate_id)
         order.chocolates.append(chocolate)

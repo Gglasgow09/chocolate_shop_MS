@@ -1,7 +1,6 @@
 import re
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Table, Index, UniqueConstraint 
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker, validates
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Table
+from sqlalchemy.orm import relationship, validates, declarative_base
 
 
 Base = declarative_base()
@@ -21,6 +20,8 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
+    first_name= Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
     username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     roles = relationship("Role", secondary=user_roles, back_populates="users")
@@ -46,18 +47,6 @@ class Chocolate(Base):
     price = Column(Float, nullable=False)
     inventory = Column(Integer, nullable=False)
 
-# the difference between __table_args__ and unique=True
-    '''
-    __table_args__ are used to define table-level options that are not specific to a single column.
-    you can use __table_args__ to define indexes, unique constraints, and other table-level options. 
-    you also have the option to name the index or unique constraint. This can be helpful when you need 
-    to reference the index or unique constraint later on. It is useful for db admin purposes. It allows
-    you to easily identify the index or unique constraint in the database.
-    where as unique =true is used to define a unique constraint on a single column. SQLAlchemy will automatically
-    create a unique constraint on the column. This is useful when you want to ensure that no two rows in the table
-    have the same value for a specific column.
-    '''
-
     orders = relationship("Order", secondary=association_table, back_populates="chocolates")
 
 class Customer(Base):
@@ -69,14 +58,6 @@ class Customer(Base):
     email = Column(String, nullable=False, unique=True)
     phone_number = Column(String, nullable=False, unique=True)
     address = Column(String, nullable=False)
-
-# example of unique constraint
-    # __table_args__ = (
-    #     # makes sure no two customers can have the same email
-    #     UniqueConstraint('email', name='uix_email'),
-    #     # makes sure no two customers can have the same phone number
-    #     UniqueConstraint('phone_number', name='uix_phone_number'),
-    # )
 
     orders = relationship("Order", back_populates="customer")
     
@@ -103,9 +84,3 @@ class Order(Base):
     customer = relationship("Customer", back_populates="orders")
     chocolates = relationship("Chocolate", secondary=association_table, back_populates="orders")
 
-
-engine = create_engine('sqlite:///chocolate_shop.db')
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()

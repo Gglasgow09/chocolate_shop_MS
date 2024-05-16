@@ -5,69 +5,69 @@ from models import Base, Chocolate, Customer, Order, User, Role
 from flask import Flask, request, jsonify, g
 from functools import wraps
 
-# app = Flask(__name__)
+app = Flask(__name__)
 
-# engine = create_engine('sqlite:///chocolate_shop.db')
-# Base.metadata.create_all(engine)
-# Session = sessionmaker(bind=engine)
-# session = Session()
+engine = create_engine('sqlite:///chocolate_shop.db')
+Base.metadata.create_all(engine)
 
-# def role_required(role_name):
-#     def decorator(f):
-#         @wraps(f)
-#         def decorated_function(*args, **kwargs):
-#             if not g.user.has_role(role_name):
-#                 return jsonify({"error": "Unauthorized"}), 403
-#             return f(*args, **kwargs)
-#         return decorated_function
-#     return decorator
+Session = sessionmaker(bind=engine)
+session = Session()
+session.commit()
 
-# def login_required(f):
-#     @wraps(f)
-#     def decorated_function(*args, **kwargs):
-#         if not g.user:
-#             return jsonify({"error": "Unauthorized"}), 403
-#         return f(*args, **kwargs)
-#     return decorated_function
+def role_required(role_name):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not g.user.has_role(role_name):
+                return jsonify({"error": "Unauthorized"}), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
-# def get_current_user():
-#     user_id = request.headers.get('user_id')
-#     if user_id:
-#         user = session.query(User).get(user_id)
-#         return user
-#     return None
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not g.user:
+            return jsonify({"error": "Unauthorized"}), 403
+        return f(*args, **kwargs)
+    return decorated_function
 
-# def add_role_to_user(user_id, role_name):
-#     user = session.query(User).get(user_id)
-#     role = session.query(Role).filter_by(name=role_name).first()
-#     if user and role:
-#         user.roles.append(role)
-#         session.commit()
-#     else:
-#         print("User or role not found.")
+def get_current_user():
+    user_id = request.headers.get('user_id')
+    if user_id:
+        user = session.query(User).get(user_id)
+        return user
+    return None
 
-# def setup_roles():
-#     admin_role = Role(name='admin')
-#     user_role = Role(name='user')
-#     session.add(admin_role)
-#     session.add(user_role)
-#     session.commit()
+def add_role_to_user(user_id, role_name):
+    user = session.query(User).get(user_id)
+    role = session.query(Role).filter_by(name=role_name).first()
+    if user and role:
+        user.roles.append(role)
+        session.commit()
+    else:
+        print("User or role not found.")
 
-#     admin_user = User(username='admin', password='admin')
-#     reg_user = User(username='user', password='user')
+def setup_roles():
+    admin_role = session.query(Role).filter_by(name='admin').first()
+    if not admin_role:
+        admin_role = Role(name='admin')
+        session.add(admin_role)
 
-#     admin_user.roles.append(admin_role)
-#     admin_user.roles.append(user_role)
-#     reg_user.roles.append(user_role)
+    user_role = session.query(Role).filter_by(name='user').first()
+    if not user_role:
+        user_role = Role(name='user')
+        session.add(user_role)
 
-#     session.add(admin_user)
-#     session.add(reg_user)
-#     session.commit()
+    session.commit()
 
-# with app.app_context():
-#     setup_roles()
+with app.app_context():
+    setup_roles()
+
+# # Get a user from the database
+# user = session.get(User, 2) 
+# delete_chocolate(1, user)
     
-
 # chocolate
 def add_chocolate(name, price, inventory):
     if not name:
@@ -109,11 +109,17 @@ def update_chocolate_inventory(chocolate_id, new_inventory):
     else:
         print(f"No chocolate found with the id {chocolate_id}.")
 
-def delete_chocolate(chocolate_id):
-    chocolate = session.query(Chocolate).filter_by(id=chocolate_id).first()
-    if chocolate:
-        session.delete(chocolate)
-        session.commit()
+def delete_chocolate(chocolate_id, user):
+    if user and user.has_role('admin'):
+        chocolate = session.query(Chocolate).get(chocolate_id)
+        if chocolate:
+            session.delete(chocolate)
+            session.commit()
+        else:
+            print("Chocolate not found.")
+    else:
+        print("Permission denied.")
+
 
 
 # customer
@@ -211,12 +217,6 @@ def delete_order(order_id):
         session.commit()
 
 
-engine = create_engine('sqlite:///chocolate_shop.db')
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
 # add_new_customer('Sally', 'Johnson', 'sallyj@example.com', '+17185237072', '110 Main Street Brookly NY, 11212' )
 # update_customer_first_name(15, 'Sandra')
 # update_customer_last_name(15, 'John')
@@ -302,6 +302,7 @@ session = Session()
 
 # for customer in top_customers:
 #     print(f"{customer.first_name} {customer.last_name} has {customer.order_count} orders.")
+
 
 
 
