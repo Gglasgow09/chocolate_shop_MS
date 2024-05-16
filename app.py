@@ -71,6 +71,12 @@ def add_new_user(first_name, last_name, username, password):
     if not first_name or not last_name or not username or not password:
         print("First name, last name, username and password are required.")
         return
+    
+    existing_user = session.query(User).filter_by(username=username).first()
+    
+    if existing_user:
+        print(f"A user with the username {username} already exists.")
+        return
 
     # Create a new user
     user = User(first_name=first_name, last_name=last_name, username=username)
