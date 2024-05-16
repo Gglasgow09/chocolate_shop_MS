@@ -1,9 +1,11 @@
 from models import User, Role
-from app import session, app
+from app import Session, app
 from flask import request, jsonify, g
 from functools import wraps
 
+session = Session()
 
+# Roles
 def role_required(role_name):
     def decorator(f):
         @wraps(f)
@@ -22,18 +24,27 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def get_current_user():
-    user_id = request.headers.get('user_id')
-    if user_id:
-        user = session.get(User, user_id)
-        return user
-    return None
 
 def add_role_to_user(user_id, role_name):
     user = session.get(User, user_id)
     role = session.query(Role).filter_by(name=role_name).first()
     if user and role:
         user.roles.append(role)
+        session.commit()
+    else:
+        print("User or role not found.")
+
+    existing_role = session.query(Role).filter_by(name=role_name).first()
+
+    if existing_role and existing_role.users:
+        print(f"A user with the role {role_name} already exists.")
+        return
+
+def remove_role_from_user(user_id, role_name):
+    user = session.get(User, user_id)
+    role = session.query(Role).filter_by(name=role_name).first()
+    if user and role:
+        user.roles.remove(role)
         session.commit()
     else:
         print("User or role not found.")
@@ -55,7 +66,14 @@ with app.app_context():
     setup_roles()
 
 
-# USER
+# USER 
+def get_current_user():
+    user_id = request.headers.get('user_id')
+    if user_id:
+        user = session.get(User, user_id)
+        return user
+    return None
+
 # Add a user
 def add_new_user(first_name, last_name, username, password):
     if not first_name or not last_name or not username or not password:
@@ -77,8 +95,18 @@ def add_new_user(first_name, last_name, username, password):
 
     print("User added successfully.")
 
+def update_user_password(user_id, new_password):
+    user = session.get(User, user_id)
+    if user:
+        user.set_password(new_password)
+        session.commit()
+    else:
+        print("User not found.")
 
 
 add_new_user('John', 'Doe', 'johndoe', 'password')
+add_new_user('Marlon', 'Myers', 'mmyers', 'password')
 
 add_role_to_user(1, 'admin')
+add_role_to_user(2, 'user')
+add_role_to_user(3, 'admin')

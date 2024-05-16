@@ -1,11 +1,15 @@
 from sqlalchemy import func, desc
-from models import  Customer, Order, Chocolate
-from app import add_new_customer, add_order, session
+from models import  Customer, Order, Chocolate, User, Role
+from app import Session
+from customer import add_new_customer
+from order import add_order
+
+session = Session()
 
 
 # # Examples for adding customers and orders
 # add_new_customer('Sally', 'Johnson', 'sallyj@example.com', '+17185237072', '110 Main Street Brooklyn NY, 11212')
-# add_order(5, 1, [1, 2])  # This example assumes customer with id 1 exists and chocolates with ids 1 and 2 exist
+# add_order(5, 1, [1, 2])  # This example shows customer with id 1 exists and chocolates with ids 1 and 2 exist
 
 # beginner simple queries for SQL
 # 1. Get all customers
@@ -79,4 +83,9 @@ top_customers = session.query(
 ).limit(3).all()
 for customer in top_customers:
     print(f"{customer.first_name} {customer.last_name} has {customer.order_count} orders.")
+
+# Get all users with admin role
+admin_users = session.query(User).filter(User.roles.any(Role.name == 'admin')).all()
+for user in admin_users:
+    print(f"{user.first_name} {user.last_name} {user.username} has admin privelages.")
 

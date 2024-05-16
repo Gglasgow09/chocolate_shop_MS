@@ -1,5 +1,7 @@
-from models import Chocolate
-from app import session
+from models import Chocolate, Order
+from app import Session
+
+session = Session()
 
 def add_chocolate(name, price, inventory):
     if not name:
@@ -40,7 +42,7 @@ def update_chocolate_inventory(chocolate_id, new_inventory):
     else:
         print(f"No chocolate found with the id {chocolate_id}.")
 
-def purchase_chocolate(chocolate_id, quantity):
+def purchase_chocolate(chocolate_id, quantity, customer_id):
     if not isinstance(quantity, int) or quantity < 0:
         print("Quantity must be a non-negative integer.")
         return
@@ -53,9 +55,18 @@ def purchase_chocolate(chocolate_id, quantity):
             return
 
         chocolate.inventory -= quantity
+
+        # Create a new order
+        order = Order(quantity=quantity, customer_id=customer_id)
+        order.chocolates.append(chocolate)
+        session.add(order)
+
         session.commit()
     else:
         print(f"No chocolate found with the id {chocolate_id}.")
+
+purchase_chocolate(2, 20, 3)
+print("Updated inventory for chocolate")
 
 def delete_chocolate(chocolate_id, user):
     if user and user.has_role('admin'):

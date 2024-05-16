@@ -1,6 +1,8 @@
-from models import Customer
-from app import session
+from models import Customer, User
+from app import Session
+import getpass
 
+session = Session()
 
 # Customer
 def add_new_customer(first_name, last_name, email, phone_number, address):
@@ -52,7 +54,20 @@ def update_customer_address(customer_id, new_address):
         session.commit()
 
 def delete_customer(customer_id):
-    customer = session.query(Customer).filter_by(id=customer_id).first()
-    if customer:
-        session.delete(customer)
-        session.commit()
+    username = input("Enter your username: ")
+    password = getpass.getpass("Enter your password: ")
+
+    user = session.query(User).filter_by(username=username).first()
+
+    if user and user.check_password(password) and user.has_role('admin'):
+        customer = session.query(Customer).filter_by(id=customer_id).first()
+        if customer:
+            session.delete(customer)
+            session.commit()
+        else:
+            print("Customer not found.")
+    else:
+        print("Permission denied.")
+
+delete_customer(14)
+    

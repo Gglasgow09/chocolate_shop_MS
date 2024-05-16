@@ -1,6 +1,9 @@
-from models import Order, Chocolate
+from models import Order, Chocolate, User
 from sqlalchemy.exc import SQLAlchemyError
-from app import session
+from app import Session
+import getpass
+
+session = Session()
 
 # Order
 def add_order(quantity, customer_id, chocolate_ids):
@@ -35,8 +38,22 @@ def update_order(order_id, new_order):
         order.id = new_order
         session.commit()
 
+
+
 def delete_order(order_id):
-    order = session.query(Order).filter_by(id=order_id).first()
-    if order:
-        session.delete(order)
-        session.commit()
+    username = input("Enter your username: ")
+    password = getpass.getpass("Enter your password: ")
+
+    user = session.query(User).filter_by(username=username).first()
+
+    if user and user.check_password(password) and user.has_role('admin'):
+        order = session.query(Order).filter_by(id=order_id).first()
+        if order:
+            session.delete(order)
+            session.commit()
+        else:
+            print("Order not found.")
+    else:
+        print("Permission denied.")
+
+delete_order(1)

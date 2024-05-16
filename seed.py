@@ -101,20 +101,3 @@ for _ in range(10):
     customer = Customer(**customer_data)
     session.add(customer)
     session.commit()  
-
-# # add 10 orders
-# highest_id = session.query(Order).order_by(Order.id.desc()).first().id
-# for _ in range(10):
-#     highest_id += 1
-#     order_data = {
-#         'customer_id': randint(1, 10),
-#         'quantity': randint(1, 10),
-#         'chocolates': sample(range(1, 8))
-#     }
-#     order = Order(customer_id=order_data['customer_id'], quantity=order_data['quantity'])
-#     session.add(order)
-#     session.commit()
-#     for chocolate_id in order_data['chocolates']:
-#         chocolate = session.get(Chocolate, chocolate_id)
-#         order.chocolates.append(chocolate)
-#     session.commit()
