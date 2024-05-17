@@ -38,7 +38,7 @@ def update_order(order_id, new_order):
         order.id = new_order
         session.commit()
 
-
+# add_order(15, 1, [1, 2])
 
 def delete_order(order_id):
     username = input("Enter your username: ")
@@ -56,4 +56,4 @@ def delete_order(order_id):
     else:
         print("Permission denied.")
 
-delete_order(1)
+# delete_order(1)

@@ -78,3 +78,4 @@ def delete_chocolate(chocolate_id, user):
             print("Chocolate not found.")
     else:
         print("Permission denied.")
+

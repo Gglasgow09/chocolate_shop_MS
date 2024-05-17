@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Chocolate, Customer, Order, User, Base
 from faker import Faker
-# from random import randint, sample
+
 
 fake = Faker()
 engine = create_engine('sqlite:///chocolate_shop.db')
